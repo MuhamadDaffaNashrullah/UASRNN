@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analisis Sentimen Digitalent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(120deg, #e3f2fd 0%, #bbdefb 100%);
+            min-height: 100vh;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+        .container {
+            background: rgba(255,255,255,0.98);
+            border-radius: 22px;
+            box-shadow: 0 8px 32px 0 rgba(13,71,161,0.13);
+            max-width: 900px;
+        }
+        h1 {
+            color: #1976d2;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+        }
+        h3, h4, h5 {
+            color: #1976d2;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .card {
+            background: linear-gradient(120deg, #ffffff 60%, #e3f2fd 100%);
+            color: #1976d2;
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 4px 16px 0 rgba(33,150,243,0.10);
+        }
+        .form-control {
+            background: rgba(255,255,255,0.98);
+            border: 1.5px solid #90caf9;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            min-height: 90px;
+            resize: vertical;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #1976d2 60%, #42a5f5 100%);
+            border: none;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-radius: 8px;
+            padding: 0.6rem 2.2rem;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #1565c0 60%, #1976d2 100%);
+        }
+        .alert-info {
+            background: linear-gradient(90deg, #e3f2fd 80%, #bbdefb 100%);
+            color: #01579b;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.08rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px 0 rgba(13,71,161,0.08);
+        }
+        hr {
+            border-top: 2.5px solid #1976d2;
+            opacity: 0.5;
+        }
+        .wordcloud-card {
+            background: #f5faff;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px 0 rgba(33,150,243,0.07);
+            padding: 1.2rem 0.5rem 0.8rem 0.5rem;
+            margin-bottom: 1.2rem;
+            transition: box-shadow 0.2s;
+        }
+        .wordcloud-card:hover {
+            box-shadow: 0 6px 18px 0 rgba(33,150,243,0.13);
+        }
+        img.img-fluid {
+            border-radius: 10px;
+            border: 2px solid #1976d2;
+            background: #e3f2fd;
+            box-shadow: 0 2px 8px 0 rgba(13,71,161,0.10);
+            max-height: 220px;
+            object-fit: contain;
+        }
+        .sentiment-label {
+            font-size: 1.08rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+        .sentiment-negatif { color: #e53935; }
+        .sentiment-netral { color: #757575; }
+        .sentiment-positif { color: #43a047; }
+        @media (max-width: 767px) {
+            .container {
+                padding: 1.2rem !important;
+            }
+            h1 {
+                font-size: 1.6rem;
+            }
+            h3 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container py-5 my-5">
+    <h1 class="text-center mb-4">Analisis Sentimen Ulasan Digitalent</h1>
+
+    <!-- Form Prediksi -->
+    <div class="card p-4 mb-5 shadow-sm">
+        <h4 class="mb-3">Masukkan Ulasan untuk Prediksi Sentimen</h4>
+        <form method="post">
+            <div class="mb-3">
+                <textarea class="form-control" name="ulasan" rows="3" placeholder="Tulis ulasan Anda di sini..." required></textarea>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">Prediksi</button>
+            </div>
+        </form>
+        {% if prediction %}
+            <div class="alert alert-info mt-4 text-center">
+                <span class="me-2"><strong>Hasil Prediksi:</strong></span>
+                <span class="sentiment-label 
+                    {% if prediction == 'Negatif' %}sentiment-negatif{% elif prediction == 'Netral' %}sentiment-netral{% else %}sentiment-positif{% endif %}">
+                    {{ prediction }}
+                </span>
+                <span class="ms-2">(Confidence: {{ '%.2f' | format(confidence * 100) }}%)</span>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Word Cloud -->
+    <h3 class="mb-4 text-center">Word Cloud Tiap Sentimen</h3>
+    <div class="row text-center mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="wordcloud-card">
+                <div class="sentiment-label sentiment-negatif">Negatif</div>
+                <img src="{{ url_for('static', filename='wordcloud/negative.png') }}" class="img-fluid" alt="Wordcloud Negatif">
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="wordcloud-card">
+                <div class="sentiment-label sentiment-netral">Netral</div>
+                <img src="{{ url_for('static', filename='wordcloud/neutral.png') }}" class="img-fluid" alt="Wordcloud Netral">
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="wordcloud-card">
+                <div class="sentiment-label sentiment-positif">Positif</div>
+                <img src="{{ url_for('static', filename='wordcloud/positive.png') }}" class="img-fluid" alt="Wordcloud Positif">
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <!-- Chart Visualisasi -->
+    <h3 class="mb-4 text-center">Visualisasi Distribusi Sentimen</h3>
+    <div class="row text-center">
+        <div class="col-md-6 mb-3">
+            <div class="card p-3 h-100">
+                <h5 class="mb-3">Bar Chart</h5>
+                <img src="{{ url_for('static', filename='charts/bar_chart.png') }}" class="img-fluid" alt="Bar Chart">
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card p-3 h-100">
+                <h5 class="mb-3">Pie Chart</h5>
+                <img src="{{ url_for('static', filename='charts/pie_chart.png') }}" class="img-fluid" alt="Pie Chart">
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
